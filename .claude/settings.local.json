@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__dashscope-websearch__bailian_web_search",
+      "Bash(/c/Users/win10/AppData/Roaming/uv/python/cpython-3.14.4-windows-x86_64-none/python.exe:*)",
+      "Bash(rm /c/Users/win10/.claude/skills/read-with-me)",
+      "Bash(ln -sf /c/Users/win10/Documents/projects/read-with-me/skills/read-with-me /c/Users/win10/.claude/skills/read-with-me)"
+    ]
+  }
+}

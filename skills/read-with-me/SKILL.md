@@ -82,12 +82,12 @@ Run the parser to get document overview:
 
 ```bash
 python scripts/parse_markdown.py <markdown-file> --overview
+# JSON output: --json
 ```
 
 This returns:
 - Total chapters (sections by `#` headings)
 - Paragraphs per chapter
-- Total word count
 
 Present this overview to the user.
 
@@ -105,6 +105,9 @@ For each paragraph:
 1. **Fetch the paragraph**:
    ```bash
    python scripts/parse_markdown.py <markdown-file> --chapter <N> --paragraph <M>
+   # Range: --paragraph 2-5
+   # Multiple: --paragraph 1,3,5
+   # All: --paragraph all
    ```
 
 2. **Output the paragraph** to the user
@@ -117,7 +120,7 @@ For each paragraph:
 
 5. **Wait for user response**:
    - User may ask questions or discuss
-   - Continue discussion until user says "next" / "continue" / "下一段"
+   - Continue discussion until user says "next" / "n" / "continue" / "下一段"
 
 6. **Auto-save notes**: When user moves to next paragraph:
    - Summarize the discussion and key points from this paragraph
