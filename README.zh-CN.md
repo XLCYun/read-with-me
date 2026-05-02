@@ -24,6 +24,16 @@ AI 驱动的文档阅读伴侣 skill。逐章逐段阅读文档，支持翻译�
 
 ## 安装
 
+### 通过 `npx skills`（推荐）
+
+```bash
+npx skills add XLCYun/read-with-me
+```
+
+自动安装到你的 agent 框架的 skill 目录（Claude Code、Cursor、Codex 等）。详见 [skills.sh](https://skills.sh/)。
+
+### 手动安装
+
 克隆仓库并安装到你的 agent skill 目录：
 
 ```bash

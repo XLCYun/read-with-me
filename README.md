@@ -24,6 +24,16 @@ An AI-powered document reading companion skill. Read documents chapter by chapte
 
 ## Installation
 
+### Via `npx skills` (recommended)
+
+```bash
+npx skills add XLCYun/read-with-me
+```
+
+This will automatically install the skill into your agent framework's skills directory (Claude Code, Cursor, Codex, etc.). See [skills.sh](https://skills.sh/) for more details.
+
+### Manual
+
 Clone the repository and install it into your agent's skills directory:
 
 ```bash
