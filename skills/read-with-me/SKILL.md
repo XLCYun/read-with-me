@@ -81,10 +81,21 @@ Present this overview to the user.
 
 ### Step 3: Ask for Preferences
 
+**Config loading logic** (check in this order):
+
+1. **Resume with existing config** — If user chose to resume AND `progress.json` has a `"config"` key → load config silently, skip asking.
+2. **Resume without config (backward compat)** — If user chose to resume BUT `progress.json` has no `"config"` key → ask preferences, then save config into the existing file.
+3. **Start fresh (reset position)** — If user chose to start from beginning AND `progress.json` has a `"config"` key → keep saved config, skip asking. Only reset chapter/paragraph.
+4. **No progress file** — Ask preferences normally.
+
+When asking preferences:
+
 1. **Translation mode**: Ask if user wants translation enabled, and to which language.
    - If yes, output both original and translation for each paragraph
 
 2. **Starting point**: Ask which chapter/paragraph to start from (default: beginning)
+
+**Save config immediately** after collecting preferences — update `{filename}.progress.json` with the `"config"` key right away, before any reading begins.
 
 ### Step 4: Reading Loop
 
@@ -121,9 +132,15 @@ For each paragraph:
    {
      "chapter": 3,
      "paragraph": 5,
-     "last_read": "2026-05-02T10:30:00"
+     "last_read": "2026-05-02T10:30:00",
+     "config": {
+       "translation_enabled": true,
+       "target_language": "中文"
+     }
    }
    ```
+
+8. **Mid-session config changes**: If user says something like "关掉翻译", "换成日语", "开启翻译" during reading — update config in memory AND immediately persist to `progress.json`. No special syntax needed, interpret natural language intent.
 
 ### Step 5: Chapter Transitions
 
@@ -168,8 +185,9 @@ Notes are appended to `{filename}.notes.md` in this format:
 
 If `{filename}.progress.json` exists when starting:
 - Ask user if they want to resume from where they left off
-- If yes, jump to the saved chapter/paragraph
-- If no, start from beginning
+- If yes, jump to the saved chapter/paragraph and load config silently (translation mode, target language)
+- If no, start from beginning but keep the saved config (only reset chapter/paragraph position)
+- If the file has no `"config"` key (old format), ask preferences and save config into the existing file
 
 ## Rules
 
