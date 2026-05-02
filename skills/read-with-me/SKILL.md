@@ -111,7 +111,7 @@ For each paragraph:
 
 2. **Output the paragraph** to the user
 
-3. **If translation enabled**: Provide Target language translation
+3. **If translation enabled**: Provide target language translation alongside the original
 
 4. **Provide interpretation**:
    - What this paragraph means
@@ -191,6 +191,7 @@ If `{filename}.progress.json` exists when starting:
 
 ## Rules
 
+- **Always output the full original text verbatim for each paragraph.** This is a reading session, not a summary session. The user reads the source material — you provide translation, interpretation, and discussion on top of it. Never replace the original with a paraphrase or summary unless user says otherwise.
 - Always wait for user to say "next" before moving to next paragraph
 - Keep discussion focused but allow tangents if user is interested
 - Notes should be concise, not verbatim transcription
