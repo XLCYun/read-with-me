@@ -3,10 +3,12 @@
 Parse markdown document structure for read-with-me skill.
 
 Usage:
-    python parse_markdown.py <file> --overview          # Show document structure
-    python parse_markdown.py <file> --chapter N          # Show all paragraphs in chapter N
-    python parse_markdown.py <file> --chapter N --paragraph M  # Show specific paragraph
-    python parse_markdown.py <file> --chapter N --paragraph M --range R  # Show M to M+R paragraphs
+    python parse_markdown.py <file> --overview                    # Show document structure
+    python parse_markdown.py <file> --chapter N                   # Show all paragraphs in chapter N
+    python parse_markdown.py <file> --chapter N --paragraph M     # Show specific paragraph
+    python parse_markdown.py <file> --chapter N --paragraph M-R   # Show paragraphs M to R
+    python parse_markdown.py <file> --chapter N --paragraph M,N,P # Show specific paragraphs
+    python parse_markdown.py <file> --chapter N --paragraph all   # Show all paragraphs
 """
 
 import argparse
@@ -120,8 +122,59 @@ def show_chapter(chapters: list[dict], chapter_num: int) -> None:
     print("\n" + "=" * 60)
 
 
-def show_paragraph(chapters: list[dict], chapter_num: int, paragraph_num: int, range_count: int = 1) -> None:
-    """Display specific paragraph(s)."""
+def parse_paragraph_spec(spec: str, max_paragraph: int) -> list[int]:
+    """
+    Parse paragraph specification into list of paragraph numbers.
+
+    Supports:
+    - "3" -> [3]
+    - "2-5" -> [2, 3, 4, 5]
+    - "1,3,5" -> [1, 3, 5]
+    - "all" -> [1, 2, ..., max_paragraph]
+    """
+    spec = spec.strip().lower()
+
+    if spec == 'all':
+        return list(range(1, max_paragraph + 1))
+
+    if '-' in spec:
+        parts = spec.split('-', 1)
+        try:
+            start = int(parts[0])
+            end = int(parts[1])
+            if start < 1 or end > max_paragraph or start > end:
+                print(f"Error: Invalid range {spec}. Must be between 1 and {max_paragraph}.")
+                sys.exit(1)
+            return list(range(start, end + 1))
+        except ValueError:
+            print(f"Error: Invalid range format '{spec}'. Use N-M (e.g., 2-5).")
+            sys.exit(1)
+
+    if ',' in spec:
+        try:
+            nums = [int(x.strip()) for x in spec.split(',')]
+            for n in nums:
+                if n < 1 or n > max_paragraph:
+                    print(f"Error: Paragraph {n} not found. Must be between 1 and {max_paragraph}.")
+                    sys.exit(1)
+            return nums
+        except ValueError:
+            print(f"Error: Invalid format '{spec}'. Use N,M,P (e.g., 1,3,5).")
+            sys.exit(1)
+
+    try:
+        num = int(spec)
+        if num < 1 or num > max_paragraph:
+            print(f"Error: Paragraph {num} not found. Must be between 1 and {max_paragraph}.")
+            sys.exit(1)
+        return [num]
+    except ValueError:
+        print(f"Error: Invalid paragraph specification '{spec}'.")
+        sys.exit(1)
+
+
+def show_paragraphs(chapters: list[dict], chapter_num: int, paragraph_spec: str) -> None:
+    """Display specific paragraph(s) based on specification."""
     if chapter_num < 1 or chapter_num > len(chapters):
         print(f"Error: Chapter {chapter_num} not found. Document has {len(chapters)} chapters.")
         sys.exit(1)
@@ -133,18 +186,16 @@ def show_paragraph(chapters: list[dict], chapter_num: int, paragraph_num: int, r
         print("Use --overview to see which chapters have content.")
         sys.exit(1)
 
-    if paragraph_num < 1 or paragraph_num > len(chapter['paragraphs']):
-        print(f"Error: Paragraph {paragraph_num} not found in chapter {chapter_num}. Chapter has {len(chapter['paragraphs'])} paragraphs.")
-        sys.exit(1)
+    paragraph_nums = parse_paragraph_spec(paragraph_spec, len(chapter['paragraphs']))
 
-    # Show requested range of paragraphs
-    for i in range(paragraph_num, min(paragraph_num + range_count, len(chapter['paragraphs']) + 1)):
-        para = chapter['paragraphs'][i - 1]
-        print(f"Chapter {chapter_num}, Paragraph {i}:")
+    # Show requested paragraphs
+    for i, para_num in enumerate(paragraph_nums):
+        para = chapter['paragraphs'][para_num - 1]
+        print(f"Chapter {chapter_num}, Paragraph {para_num}:")
         print("-" * 40)
         print(para)
         print("-" * 40)
-        if i < paragraph_num + range_count - 1 and i < len(chapter['paragraphs']):
+        if i < len(paragraph_nums) - 1:
             print()
 
 
@@ -156,8 +207,7 @@ def main():
     parser.add_argument('file', help='Path to markdown file')
     parser.add_argument('--overview', action='store_true', help='Show document structure overview')
     parser.add_argument('--chapter', type=int, help='Chapter number to display')
-    parser.add_argument('--paragraph', type=int, help='Paragraph number to display')
-    parser.add_argument('--range', type=int, default=1, help='Number of paragraphs to show (default: 1)')
+    parser.add_argument('--paragraph', type=str, help='Paragraph(s) to display: N, N-M, N,M,P, or "all"')
     parser.add_argument('--json', action='store_true', help='Output as JSON')
 
     args = parser.parse_args()
@@ -201,7 +251,7 @@ def main():
     if args.overview:
         show_overview(chapters)
     elif args.chapter and args.paragraph:
-        show_paragraph(chapters, args.chapter, args.paragraph, args.range)
+        show_paragraphs(chapters, args.chapter, args.paragraph)
     elif args.chapter:
         show_chapter(chapters, args.chapter)
     else:
