@@ -123,9 +123,10 @@ For each paragraph:
    - Continue discussion until user says "next" / "n" / "continue" / "下一段"
 
 6. **Auto-save notes**: When user moves to next paragraph:
+   - **Only write notes if the user asked questions or discussed the chapter or paragraphs.** No discussion = user has no doubts = skip notes.
    - Summarize the discussion and key points from this paragraph
-   - If there's content worth noting, append to `{filename}.notes.md`
-   - If nothing noteworthy, skip
+   - If there's content worth noting from discussion, append to `{filename}.notes.md`
+   - If user did not engage (no questions, no discussion), do NOT write notes for this paragraph/chapter
 
 7. **Save progress**: Update `{filename}.progress.json`:
    ```json
