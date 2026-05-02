@@ -18,8 +18,7 @@ Interactive document reading companion. Read documents chapter by chapter, parag
 | arxiv link (e.g., `https://arxiv.org/abs/2301.00001`) | Auto-download PDF, name as `{arxiv_id}_{sanitized_title}.pdf` |
 | arxiv ID (e.g., `2301.00001` or `2301.00001v1`) | Same as above — treated as arxiv shorthand |
 | PDF download URL | Auto-download |
-| Local file path (PDF) | Direct read, requires `pdf` skill |
-| Local file path (Word) | Direct read, requires `docx` skill |
+| Local file path (PDF, Word, etc.) | Auto-convert via `convert.py` using MarkItDown |
 | Local file path (TXT/Markdown) | Direct read |
 
 ## Prerequisites
@@ -42,23 +41,12 @@ python scripts/parse_markdown.py <file> --overview
 uv run scripts/parse_markdown.py <file> --overview
 ```
 
-### PDF/Word Conversion Skills
+### MarkItDown
 
-When the input is a PDF or Word document, first check if any installed skill can handle it:
+The `markitdown` Python package is required for converting PDF, Word, and other document formats to markdown. If not installed, the conversion script will report an error — install it with:
 
 ```bash
-# Check for any skill that mentions PDF/Word conversion capability
-grep -rl "pdf\|PDF" ~/.claude/skills/*/SKILL.md 2>/dev/null
-grep -rl "docx\|word\|Word" ~/.claude/skills/*/SKILL.md 2>/dev/null
-```
-
-If no suitable skill is found, recommend installing from Anthropic:
-
-```
-I don't have a skill to convert PDF/Word documents. Would you like to install one?
-
-- For PDF: `npx skills add https://github.com/anthropics/skills --skill pdf`
-- For Word: `npx skills add https://github.com/anthropics/skills --skill docx`
+pip install markitdown
 ```
 
 ## Workflow
@@ -71,9 +59,8 @@ I don't have a skill to convert PDF/Word documents. Would you like to install on
    - If it's a local file → verify it exists
 
 2. Convert to Markdown if needed:
-   - PDF → use `pdf` skill to convert
-   - Word → use `docx` skill to convert
-   - TXT/Markdown → use directly
+   - PDF/Word/其他格式 → python scripts/convert.py <file> [-o output.md]
+   - TXT/Markdown → use directly (convert.py auto-passes through these)
 
 3. Save the markdown file alongside the original (or in current directory for downloads)
 
