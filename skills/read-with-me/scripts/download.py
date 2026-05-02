@@ -215,7 +215,7 @@ def main():
     url = args.url.strip()
 
     # Determine if this is an arxiv link
-    if 'arxiv.org' in url or re.match(r'^\d+\.\d+$', url):
+    if 'arxiv.org' in url or re.match(r'^\d+\.\d+(?:v\d+)?$', url):
         result = handle_arxiv(url, output_dir)
     else:
         result = handle_url(url, output_dir)

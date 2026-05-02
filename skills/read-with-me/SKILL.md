@@ -16,6 +16,7 @@ Interactive document reading companion. Read documents chapter by chapter, parag
 | Input Type | Handling |
 |-----------|----------|
 | arxiv link (e.g., `https://arxiv.org/abs/2301.00001`) | Auto-download PDF, name as `{arxiv_id}_{sanitized_title}.pdf` |
+| arxiv ID (e.g., `2301.00001` or `2301.00001v1`) | Same as above — treated as arxiv shorthand |
 | PDF download URL | Auto-download |
 | Local file path (PDF) | Direct read, requires `pdf` skill |
 | Local file path (Word) | Direct read, requires `docx` skill |
