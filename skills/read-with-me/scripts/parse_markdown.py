@@ -94,9 +94,12 @@ def show_overview(chapters: list[dict]) -> None:
     for i, chapter in enumerate(chapters, 1):
         indent = "  " * (chapter['level'] - 1) if chapter['level'] > 0 else ""
         para_count = len(chapter['paragraphs'])
-        print(f"{indent}[{i}] {chapter['title']} ({para_count} paragraphs)")
+        status = f"({para_count} paragraphs)" if para_count > 0 else "(no content)"
+        print(f"{indent}[{i}] {chapter['title']} {status}")
 
     print("-" * 60)
+    print("\nTip: Use --chapter N --paragraph M to read specific content.")
+    print("     Chapters with '(no content)' are section headers only.")
 
 
 def show_chapter(chapters: list[dict], chapter_num: int) -> None:
@@ -124,6 +127,11 @@ def show_paragraph(chapters: list[dict], chapter_num: int, paragraph_num: int, r
         sys.exit(1)
 
     chapter = chapters[chapter_num - 1]
+
+    if len(chapter['paragraphs']) == 0:
+        print(f"Error: Chapter {chapter_num} '{chapter['title']}' has no content (section header only).")
+        print("Use --overview to see which chapters have content.")
+        sys.exit(1)
 
     if paragraph_num < 1 or paragraph_num > len(chapter['paragraphs']):
         print(f"Error: Paragraph {paragraph_num} not found in chapter {chapter_num}. Chapter has {len(chapter['paragraphs'])} paragraphs.")
