@@ -149,6 +149,9 @@ def show_paragraph(chapters: list[dict], chapter_num: int, paragraph_num: int, r
 
 
 def main():
+    # Fix Windows console encoding for Unicode output
+    sys.stdout.reconfigure(encoding='utf-8')
+
     parser = argparse.ArgumentParser(description='Parse markdown document structure')
     parser.add_argument('file', help='Path to markdown file')
     parser.add_argument('--overview', action='store_true', help='Show document structure overview')

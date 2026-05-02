@@ -200,6 +200,9 @@ def handle_url(url: str, output_dir: Path) -> Optional[Path]:
 
 
 def main():
+    # Fix Windows console encoding for Unicode output
+    sys.stdout.reconfigure(encoding='utf-8')
+
     parser = argparse.ArgumentParser(description='Download documents for read-with-me')
     parser.add_argument('url', help='URL to download (arxiv link or direct URL)')
     parser.add_argument('--output-dir', '-o', default='.', help='Output directory (default: current directory)')
