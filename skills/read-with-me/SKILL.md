@@ -73,9 +73,12 @@ python scripts/parse_markdown.py <markdown-file> --overview
 # JSON output: --json
 ```
 
-This returns:
-- Total chapters (sections by `#` headings)
-- Paragraphs per chapter
+This returns a hierarchical structure:
+- **Chapters** (`#` headings)
+- **Sections** (`##` headings within each chapter)
+- **Paragraphs** within each section
+
+Fallback: if no `#` headings exist, `##` becomes chapters and `###` becomes sections.
 
 Present this overview to the user.
 
@@ -85,7 +88,7 @@ Present this overview to the user.
 
 1. **Resume with existing config** — If user chose to resume AND `progress.json` has a `"config"` key → load config silently, skip asking.
 2. **Resume without config (backward compat)** — If user chose to resume BUT `progress.json` has no `"config"` key → ask preferences, then save config into the existing file.
-3. **Start fresh (reset position)** — If user chose to start from beginning AND `progress.json` has a `"config"` key → keep saved config, skip asking. Only reset chapter/paragraph.
+3. **Start fresh (reset position)** — If user chose to start from beginning AND `progress.json` has a `"config"` key → keep saved config, skip asking. Only reset chapter/section/paragraph.
 4. **No progress file** — Ask preferences normally.
 
 When asking preferences:
@@ -93,29 +96,37 @@ When asking preferences:
 1. **Translation mode**: Ask if user wants translation enabled, and to which language.
    - If yes, output both original and translation for each paragraph
 
-2. **Starting point**: Ask which chapter/paragraph to start from (default: beginning)
+2. **Reading unit**: Ask if user wants to read by paragraph or by section.
+   - `"paragraph"`: read one paragraph at a time, with section header as context
+   - `"section"`: read all paragraphs in a section at once
+
+3. **Starting point**: Ask which chapter/section/paragraph to start from (default: beginning)
 
 **Save config immediately** after collecting preferences — update `{filename}.progress.json` with the `"config"` key right away, before any reading begins.
 
 ### Step 4: Reading Loop
 
+The reading loop branches based on `config.reading_unit`:
+
+#### Paragraph mode (`reading_unit: "paragraph"`)
+
 For each paragraph:
 
 1. **Fetch the paragraph**:
    ```bash
-   python scripts/parse_markdown.py <markdown-file> --chapter <N> --paragraph <M>
+   python scripts/parse_markdown.py <markdown-file> --chapter <N> --section <M> --paragraph <P>
    # Range: --paragraph 2-5
    # Multiple: --paragraph 1,3,5
    # All: --paragraph all
    ```
 
-2. **Output the paragraph** to the user
+2. **Output the paragraph** to the user (with section title as context header)
 
 3. **If translation enabled**: Provide target language translation alongside the original
 
 4. **Provide interpretation**:
    - What this paragraph means
-   - Its role in the chapter/document structure
+   - Its role in the section/chapter/document structure
 
 5. **Wait for user response**:
    - User may ask questions or discuss
@@ -131,20 +142,66 @@ For each paragraph:
    ```json
    {
      "chapter": 3,
+     "section": 1,
      "paragraph": 5,
      "last_read": "2026-05-02T10:30:00",
      "config": {
        "translation_enabled": true,
-       "target_language": "中文"
+       "target_language": "中文",
+       "reading_unit": "paragraph"
      }
    }
    ```
 
-8. **Mid-session config changes**: If user says something like "关掉翻译", "换成日语", "开启翻译" during reading — update config in memory AND immediately persist to `progress.json`. No special syntax needed, interpret natural language intent.
+#### Section mode (`reading_unit: "section"`)
 
-### Step 5: Chapter Transitions
+For each section:
 
-When all paragraphs in a chapter are done:
+1. **Fetch the section**:
+   ```bash
+   python scripts/parse_markdown.py <markdown-file> --chapter <N> --section <M>
+   ```
+
+2. **Output all paragraphs** in the section under the section heading
+
+3. **If translation enabled**: Provide target language translation for the section
+
+4. **Provide interpretation**:
+   - What this section covers
+   - Its role in the chapter/document structure
+
+5. **Wait for user response**:
+   - User may ask questions or discuss
+   - Continue discussion until user says "next" / "n" / "continue" / "下一段"
+
+6. **Auto-save notes**: Same rules as paragraph mode — only write if user engaged in discussion.
+
+7. **Save progress**: Update `{filename}.progress.json` with `paragraph` set to the last paragraph number in the section:
+   ```json
+   {
+     "chapter": 3,
+     "section": 1,
+     "paragraph": 8,
+     "last_read": "2026-05-02T10:30:00",
+     "config": {
+       "translation_enabled": true,
+       "target_language": "中文",
+       "reading_unit": "section"
+     }
+   }
+   ```
+
+#### Mid-session config changes
+
+If user says something like "关掉翻译", "换成日语", "开启翻译", "逐段阅读", "按节阅读" during reading — update config in memory AND immediately persist to `progress.json`. No special syntax needed, interpret natural language intent.
+
+### Step 5: Section and Chapter Transitions
+
+When all paragraphs in a section are done (paragraph mode):
+- Show "Section complete" notice
+- Move to next section
+
+When all sections in a chapter are done:
 - Ask if user wants a chapter summary
 - If yes, provide summary of key points from the chapter
 - Move to next chapter
@@ -170,9 +227,9 @@ For all documents:
 Notes are appended to `{filename}.notes.md` in this format:
 
 ```markdown
-## Chapter X, Paragraph Y
+## Chapter X, Section Y: Section Title, Paragraph Z
 
-**Summary**: [Brief summary of paragraph content]
+**Summary**: [Brief summary of paragraph/section content]
 
 **Discussion Points**:
 - [Key point 1 from discussion]
@@ -185,9 +242,10 @@ Notes are appended to `{filename}.notes.md` in this format:
 
 If `{filename}.progress.json` exists when starting:
 - Ask user if they want to resume from where they left off
-- If yes, jump to the saved chapter/paragraph and load config silently (translation mode, target language)
-- If no, start from beginning but keep the saved config (only reset chapter/paragraph position)
+- If yes, jump to the saved chapter/section/paragraph and load config silently (translation mode, target language, reading unit)
+- If no, start from beginning but keep the saved config (only reset chapter/section/paragraph position)
 - If the file has no `"config"` key (old format), ask preferences and save config into the existing file
+- If the file has no `"section"` key (old format), treat as section 1
 
 ## Rules
 
