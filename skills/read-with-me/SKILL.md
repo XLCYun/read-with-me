@@ -25,21 +25,13 @@ Interactive document reading companion. Read documents chapter by chapter, parag
 
 ### Python
 
-Python 3.10+ is required. Check if Python is available:
+Python 3.10+ is required. Run the detector at session start:
 
 ```bash
-python --version || python3 --version || uv --version
+bash scripts/detect_python.sh
 ```
 
-**Running scripts**: Use whichever Python is available:
-
-```bash
-# Standard Python
-python scripts/parse_markdown.py <file> --overview
-
-# Or with uv (faster, auto-manages dependencies)
-uv run scripts/parse_markdown.py <file> --overview
-```
+It outputs `python`, `python3`, or `uv run python`. Use that command for all subsequent script calls.
 
 ### MarkItDown
 
